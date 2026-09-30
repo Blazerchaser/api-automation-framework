@@ -1,18 +1,31 @@
 # API Automation Framework
 
-Minimal pytest project for learning QA Automation and simple API-like tests.
+Minimal pytest project for learning QA Automation and API testing.
 
-This project uses a learning mock/example instead of a real API server.
+The default suite covers a stateful fake client, HTTP request/response checks
+with `httpx.MockTransport`, JSON Schema validation, fake-token permission
+checks, and a real HTTP round trip to an in-memory server on `127.0.0.1`.
+External demo API checks require a separate opt-in run. These tests demonstrate
+test design and client behavior; they do not validate a deployed backend or
+real authentication.
 
 ## Install dependencies
 
-```bash
+Use Python 3.12, matching CI, and create a virtual environment:
+
+```powershell
+python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
+Direct dependencies are pinned to the versions verified locally on Python
+3.12.14. This keeps those versions stable; it is not a complete lock of their
+transitive dependencies. The pins have been checked against the installed
+environment; a clean installation still needs verification in CI.
+
 ## Run the full suite
 
-```bash
+```powershell
 .\.venv\Scripts\python.exe -m pytest -v
 ```
 
@@ -26,18 +39,20 @@ The external tests are skipped unless `RUN_EXTERNAL_API_TESTS=1` is set.
 
 `.github/workflows/api.yml` runs this selection on `push` and `pull_request`
 with Python 3.12. Green CI confirms the mock and local `127.0.0.1` tests;
-it does not confirm that the external demo API is available. The workflow
-still needs a GitHub-hosted run for validation.
+it does not confirm that the external demo API is available.
+[GitHub Actions run 36411169518](https://github.com/Blazerchaser/api-automation-framework/actions/runs/36411169518)
+completed successfully for commit `a7f4baa`. That run validates the published
+commit, not subsequent local changes.
 
 ## Run smoke tests
 
-```bash
+```powershell
 .\.venv\Scripts\python.exe -m pytest -m smoke -v
 ```
 
 ## Run marker groups
 
-```bash
+```powershell
 .\.venv\Scripts\python.exe -m pytest -m api -q
 .\.venv\Scripts\python.exe -m pytest -m auth -q
 .\.venv\Scripts\python.exe -m pytest -m contract -q
@@ -50,7 +65,8 @@ These tests call `https://jsonplaceholder.typicode.com`, an external demo API.
 It can be unavailable or change outside this project.
 
 ```powershell
-$env:RUN_EXTERNAL_API_TESTS="1"; .\.venv\Scripts\python.exe -m pytest -m external -v
+$env:RUN_EXTERNAL_API_TESTS="1"
+.\.venv\Scripts\python.exe -m pytest -m external -v
 Remove-Item Env:RUN_EXTERNAL_API_TESTS
 ```
 
@@ -81,4 +97,5 @@ Remove-Item Env:RUN_EXTERNAL_API_TESTS
 - Parametrized tests show an access-control matrix for the admin endpoint.
 - Test organization uses `conftest.py` fixtures and reusable support helpers.
 
-This is a learning example. It does not call a real API and does not use production framework patterns.
+This is a learning example. The default suite uses mocks and a local fake
+server; only the opt-in external tests contact the public demo API.
